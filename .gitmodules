@@ -1,0 +1,6 @@
+[submodule "third_party/cs_tracking"]
+	path = third_party/cs_tracking
+	url = https://github.com/SteamDatabase/GameTracking-CSGO
+[submodule "third_party/steam_tracking"]
+	path = third_party/steam_tracking
+	url = https://github.com/SteamDatabase/SteamTracking

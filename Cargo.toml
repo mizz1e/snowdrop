@@ -1,0 +1,18 @@
+[package]
+name = "elysium"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+bevy = { version = "0.10.1", default-features = false, features = ["bevy_asset", "bevy_core_pipeline", "bevy_gltf", "bevy_pbr", "bevy_render", "bevy_scene", "bevy_sprite", "bevy_winit"] }
+bevy-vfx-bag = { version = "0.2.0", default-features = false }
+bevy_rapier3d = { version = "0.21.0", default-features = false, features = ["async-collider", "debug-render", "dim3", "parallel"] }
+clap = { version = "4.3.0", default-features = false, features = ["derive", "help", "std", "suggestions", "usage"] }
+leafwing-input-manager = { version = "0.9.2", default-features = false }
+
+[features]
+wayland = ["bevy/wayland"]
+x11 = ["bevy/x11"]
+
+[workspace]
+members = ["crates/*"]

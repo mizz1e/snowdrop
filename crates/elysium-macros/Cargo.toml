@@ -1,0 +1,12 @@
+[package]
+name = "elysium-macros"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+proc-macro2 = "1.0.59"
+quote = "1.0.28"
+syn = { version = "2.0.18", features = ["full"] }
+
+[lib]
+proc-macro = true

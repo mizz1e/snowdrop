@@ -1,0 +1,8 @@
+[package]
+name = "elysium-console"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.3.0", default-features = false, features = ["color", "derive", "env", "help", "std", "suggestions", "unicode", "usage", "wrap_help"] }
+elysium-macros = { version = "0.0.0", path = "../elysium-macros", default-features = false }
