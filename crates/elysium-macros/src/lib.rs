@@ -48,7 +48,7 @@ fn try_console(mut input: syn::ItemEnum) -> syn::Result<proc_macro2::TokenStream
         #[command(bin_name = "console")]
         // Don't provide the `help` command.
         #[command(disable_help_subcommand = true)]
-        // Allows parsing `["sv_cheats"]`, rather than `["console", "sv_cheats"]`.
+        // Parae `sv_cheats`, rather than `console sv_cheats`.
         #[command(multicall = true)]
         // Always called "console".
         #[command(name = "console")]
@@ -169,6 +169,9 @@ fn try_console(mut input: syn::ItemEnum) -> syn::Result<proc_macro2::TokenStream
                 // Prevent clap being confused.
                 // See https://github.com/clap-rs/clap/issues/4467
                 #[arg(action = ArgAction::Set)]
+
+                // Allow `setpos -1 -1 -1`.
+                #[arg(allow_negative_numbers = true)]
 
                 // Allows a default value to be displayed while being required still.
                 #[arg(required = true)]
