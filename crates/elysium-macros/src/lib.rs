@@ -123,12 +123,16 @@ fn try_console(mut input: syn::ItemEnum) -> syn::Result<proc_macro2::TokenStream
 
         // Always use doc comments, verbatim.
         variant.attrs.extend(attributes!(
+            // Require documentation for variants.
+            #[deny(missing_docs)]
+
             // Include them full stops, lol.
             #[command(verbatim_doc_comment)]
         ));
 
         for field in variant.fields.iter_mut() {
             let mut default = None;
+            let mut parser = None;
 
             field.attrs = mem::take(&mut field.attrs)
                 .into_iter()
@@ -141,6 +145,14 @@ fn try_console(mut input: syn::ItemEnum) -> syn::Result<proc_macro2::TokenStream
                                 let expr: syn::Expr = value.parse()?;
 
                                 default = Some(expr);
+
+                                Ok(())
+                            } else if meta.path.is_ident("parser") {
+                                // Parses `parser = ???`.
+                                let value = meta.value()?;
+                                let expr: syn::Expr = value.parse()?;
+
+                                parser = Some(expr);
 
                                 Ok(())
                             } else {
@@ -165,7 +177,17 @@ fn try_console(mut input: syn::ItemEnum) -> syn::Result<proc_macro2::TokenStream
                 ));
             }
 
+            // Provide a custom parser if provided.
+            if let Some(parser) = parser {
+                field.attrs.push(syn::parse_quote!(
+                    #[arg(value_parser = #parser)]
+                ));
+            }
+
             field.attrs.extend(attributes!(
+                // Don't inherit the documentation requirement for variant fields.
+                #[allow(missing_docs)]
+
                 // Prevent clap being confused.
                 // See https://github.com/clap-rs/clap/issues/4467
                 #[arg(action = ArgAction::Set)]
