@@ -1,8 +1,5 @@
 use {
-    clap::{
-        builder::{self, EnumValueParser, PossibleValue, TypedValueParser},
-        error::{Error, ErrorKind},
-    },
+    clap::builder::{self, EnumValueParser, PossibleValue, TypedValueParser},
     std::{ffi, fmt, str},
 };
 
@@ -52,12 +49,12 @@ where
         arg: Option<&clap::Arg>,
         value: &ffi::OsStr,
     ) -> Result<Self::Value, clap::Error> {
-        let value = builder::StringValueParser::new().parse_ref(cmd, arg, value)?;
-        let value = value
-            .parse::<E>()
-            .map_err(|error| Error::raw(ErrorKind::InvalidValue, error))?;
+        let string = builder::StringValueParser::new().parse_ref(cmd, arg, value)?;
 
-        Ok(value)
+        match string.parse::<E>() {
+            Ok(value) => Ok(value),
+            Err(_error) => self.inner.parse_ref(cmd, arg, value),
+        }
     }
 
     #[inline]
