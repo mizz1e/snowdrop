@@ -1,4 +1,5 @@
-use {bevy::prelude::*, bevy_source::prelude::*};
+use bevy::prelude::*;
+use bevy_source::prelude::*;
 
 #[bevy_main]
 fn main() {

@@ -3,8 +3,11 @@ edition = "2021"
 name = "link"
 version = "0.0.0"
 
-[dependencies.libc]
-version = "0.2"
+[dependencies]
+libc.workspace = true
 
 [dependencies.memchr]
 version = "2.5"
+
+[lints]
+workspace = true

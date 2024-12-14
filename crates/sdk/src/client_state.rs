@@ -1,4 +1,5 @@
-use crate::{global, net_message::SignOnState, INetChannel, Ptr};
+use crate::net_message::SignOnState;
+use crate::{global, INetChannel, Ptr};
 use bevy::prelude::*;
 use std::time::Duration;
 

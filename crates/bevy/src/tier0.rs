@@ -1,4 +1,6 @@
-use {crate::sys, bevy::prelude::*, std::ffi};
+use crate::sys;
+use bevy::prelude::*;
+use std::ffi;
 
 pub use self::command_line::command_line;
 

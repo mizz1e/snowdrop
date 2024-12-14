@@ -1,14 +1,9 @@
-use {
-    crate::{global, Ptr},
-    bevy::prelude::*,
-    bevy_source_internal::pattern,
-    std::{
-        ffi::{self, CString, OsStr},
-        mem,
-        os::unix::ffi::OsStrExt,
-        ptr,
-    },
-};
+use crate::{global, Ptr};
+use bevy::prelude::*;
+use bevy_source_internal::pattern;
+use std::ffi::{self, CString, OsStr};
+use std::os::unix::ffi::OsStrExt;
+use std::{mem, ptr};
 
 #[derive(Resource)]
 pub struct FromString(

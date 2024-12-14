@@ -1,4 +1,5 @@
-use {bevy::prelude::*, std::cell::UnsafeCell};
+use bevy::prelude::*;
+use std::cell::UnsafeCell;
 
 static CELL: Cell = Cell(UnsafeCell::new(None));
 

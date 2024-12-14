@@ -1,7 +1,6 @@
-use {
-    bindgen::{CargoCallbacks, NonCopyUnionStyle},
-    std::{env, path::PathBuf},
-};
+use bindgen::{CargoCallbacks, NonCopyUnionStyle};
+use std::env;
+use std::path::PathBuf;
 
 fn main() {
     let bindings = bindgen::Builder::default()

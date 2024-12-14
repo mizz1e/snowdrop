@@ -4,12 +4,15 @@ name = "elysium"
 version = "0.0.0"
 
 [dependencies]
-bevy = { version = "0.10.1", default-features = false }
+bevy.workspace = true
 bevy_source = { version = "0.0.0", path = "crates/bevy", default-features = false }
 
 [[bin]]
 name = "csgo_linux64"
 path = "src/main.rs"
+
+[lints]
+workspace = true
 
 [profile.dev]
 opt-level = 2
@@ -19,9 +22,22 @@ lto = "fat"
 strip = "symbols"
 
 [workspace]
-members = [
-    "crates/bevy",
-    "crates/bevy_internal",
-    "crates/sdk",
-    "crates/sys",
-]
+members = ["crates/*"]
+resolver = "2"
+
+[workspace.dependencies]
+bitflags = "2"
+bevy = { version = "0.10", default-features = false }
+dirs = "5"
+libc = { version = "0.2", default-features = false }
+libm = "0.2"
+libloading = "0.8"
+sdl2 = { version = "0.36", default-features = false, features = [
+    "raw-window-handle",
+] }
+thiserror = "2"
+
+[workspace.lints.clippy]
+alloc_instead_of_core = "deny"
+std_instead_of_alloc = "deny"
+std_instead_of_core = "deny"

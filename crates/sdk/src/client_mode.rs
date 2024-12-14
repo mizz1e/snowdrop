@@ -1,19 +1,15 @@
-use {
-    crate::{
-        entity::{ObserverMode, WeaponKind},
-        global, math, trace, Button, CUserCmd, CViewSetup, ClientState, Config, EntityFlag,
-        IClientEntity, IClientEntityList, IEngineTrace, IPhysicsSurfaceProps, IVEngineClient,
-        Mat4x3, Ptr, SurfaceKind, Time, TraceResult, WeaponInfo,
-    },
-    bevy::{
-        ecs::{
-            schedule::{Schedule, ScheduleLabel},
-            system::{Commands, In, SystemState},
-        },
-        prelude::{IntoPipeSystem, Res, ResMut, Resource, Vec3},
-    },
-    std::{arch::asm, cmp::Ordering, ptr},
+use crate::entity::{ObserverMode, WeaponKind};
+use crate::{
+    global, math, trace, Button, CUserCmd, CViewSetup, ClientState, Config, EntityFlag,
+    IClientEntity, IClientEntityList, IEngineTrace, IPhysicsSurfaceProps, IVEngineClient, Mat4x3,
+    Ptr, SurfaceKind, Time, TraceResult, WeaponInfo,
 };
+use bevy::ecs::schedule::{Schedule, ScheduleLabel};
+use bevy::ecs::system::{Commands, In, SystemState};
+use bevy::prelude::{IntoPipeSystem, Res, ResMut, Resource, Vec3};
+use std::arch::asm;
+use std::cmp::Ordering;
+use std::ptr;
 
 #[derive(Resource)]
 pub struct OverrideView(pub(crate) unsafe extern "C" fn(this: *mut u8, setup: *mut CViewSetup));

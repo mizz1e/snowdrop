@@ -1,8 +1,6 @@
-use {
-    crate::Maps,
-    iced_x86::{Decoder, DecoderOptions, FlowControl, Instruction},
-    std::io,
-};
+use crate::Maps;
+use iced_x86::{Decoder, DecoderOptions, FlowControl, Instruction};
+use std::io;
 
 /// Attempt to disassemble the provided `bytes`.
 pub fn disassemble(bytes: &[u8]) -> io::Result<Vec<Instruction>> {

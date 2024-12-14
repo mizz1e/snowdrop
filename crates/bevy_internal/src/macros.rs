@@ -1,10 +1,16 @@
-use {
-    regex::bytes::Regex,
-    std::{marker::FnPtr, panic, sync::OnceLock},
-};
+use regex::bytes::Regex;
+use std::marker::FnPtr;
+use std::panic;
+use std::sync::OnceLock;
 
 /// A lazily compiled pattern.
 pub struct Pattern(OnceLock<Regex>);
+
+impl Default for Pattern {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl Pattern {
     /// Create a new `Pattern`.

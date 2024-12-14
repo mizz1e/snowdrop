@@ -1,8 +1,8 @@
-use {
-    crate::internal::Library,
-    bevy::prelude::*,
-    std::{env::consts, io, path::Path},
-};
+use crate::internal::Library;
+use bevy::prelude::*;
+use std::env::consts;
+use std::io;
+use std::path::Path;
 
 #[inline(never)]
 pub fn load_module(ident: &'static str) -> Library {

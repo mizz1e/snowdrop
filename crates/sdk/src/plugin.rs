@@ -1,8 +1,9 @@
 use crate::entity::AnimState;
+use crate::event::EventManager;
 use crate::{
-    config, engine, event::EventManager, global, ptr, Config, EngineVGui, Error, IBaseClientDLL,
-    IClientEntityList, IEngineTrace, IMaterialSystem, IPhysicsSurfaceProps, IVEngineClient,
-    IVModelRender, KeyValues, ModuleMap, OnceLoaded, SourceSettings, Surface, WindowMode,
+    config, engine, global, ptr, Config, EngineVGui, Error, IBaseClientDLL, IClientEntityList,
+    IEngineTrace, IMaterialSystem, IPhysicsSurfaceProps, IVEngineClient, IVModelRender, KeyValues,
+    ModuleMap, OnceLoaded, SourceSettings, Surface, WindowMode,
 };
 use bevy::prelude::App;
 

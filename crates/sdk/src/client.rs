@@ -1,13 +1,12 @@
-use {
-    crate::{
-        convar, global, material, networked, ptr, CGlobalVarsBase, CInput, CUserCmd, Config,
-        IClientEntity, IClientMode, ICvar, IMaterialSystem, IPhysicsSurfaceProps, IVEngineClient,
-        InputStackSystem, KeyValues, ModuleMap, Ptr, Surface,
-    },
-    bevy::{ecs::system::SystemState, prelude::*},
-    bevy_source_internal::{assert_mnemonic, iced_x86, FnPtr, Ptr as _},
-    std::{ffi, mem},
+use crate::{
+    convar, global, material, networked, ptr, CGlobalVarsBase, CInput, CUserCmd, Config,
+    IClientEntity, IClientMode, ICvar, IMaterialSystem, IPhysicsSurfaceProps, IVEngineClient,
+    InputStackSystem, KeyValues, ModuleMap, Ptr, Surface,
 };
+use bevy::ecs::system::SystemState;
+use bevy::prelude::*;
+use bevy_source_internal::{assert_mnemonic, iced_x86, FnPtr, Ptr as _};
+use std::{ffi, mem};
 
 const FRAME_NET_UPDATE_END: ffi::c_int = 4;
 const FRAME_RENDER_START: ffi::c_int = 5;
@@ -177,62 +176,65 @@ unsafe extern "C" fn level_shutdown(this: *mut u8) {
 }
 
 unsafe extern "C" fn frame_stage_notify(this: *mut u8, frame: ffi::c_int) {
-    debug_assert!(!this.is_null());
+    let result = std::panic::catch_unwind(|| {
+        debug_assert!(!this.is_null());
 
-    let method = global::with_app_mut(|app| {
-        if !app.world.contains_resource::<IClientMode>() {
-            trace!("client mode doesnt exist, creating");
+        let method = global::with_app_mut(|app| {
+            if !app.world.contains_resource::<IClientMode>() {
+                trace!("client mode doesnt exist, creating");
 
-            let client = app.world.resource::<IBaseClientDLL>();
-            let client_mode = client.setup_client_mode();
-            let global_vars = client.setup_global_vars();
+                let client = app.world.resource::<IBaseClientDLL>();
+                let client_mode = client.setup_client_mode();
+                let global_vars = client.setup_global_vars();
 
-            app.insert_resource(client_mode);
-            app.insert_resource(global_vars);
+                app.insert_resource(client_mode);
+                app.insert_resource(global_vars);
 
-            let module_map = app.world.resource::<ModuleMap>();
+                let module_map = app.world.resource::<ModuleMap>();
 
-            let engine_module = module_map.get_module("inputsystem_client.so").unwrap();
-            let input_stack_system = engine_module
-                .create_interface("InputStackSystemVersion001")
-                .unwrap();
+                let engine_module = module_map.get_module("inputsystem_client.so").unwrap();
+                let input_stack_system = engine_module
+                    .create_interface("InputStackSystemVersion001")
+                    .unwrap();
 
-            let material_system_module = module_map.get_module("materialsystem_client.so").unwrap();
-            let cvar = material_system_module
-                .create_interface("VEngineCvar007")
-                .unwrap();
+                let material_system_module =
+                    module_map.get_module("materialsystem_client.so").unwrap();
+                let cvar = material_system_module
+                    .create_interface("VEngineCvar007")
+                    .unwrap();
 
-            let vphysics_module = module_map.get_module("vphysics_client.so").unwrap();
-            let ptr = vphysics_module
-                .create_interface("VPhysicsSurfaceProps001")
-                .unwrap();
+                let vphysics_module = module_map.get_module("vphysics_client.so").unwrap();
+                let ptr = vphysics_module
+                    .create_interface("VPhysicsSurfaceProps001")
+                    .unwrap();
 
-            let cvar = ICvar { ptr: cvar };
+                let cvar = ICvar { ptr: cvar };
 
-            let ffa = convar::Ffa(cvar.find_var("mp_teammates_are_enemies").unwrap());
-            let panorama_disable_blur =
-                convar::PanoramaDisableBlur(cvar.find_var("@panorama_disable_blur").unwrap());
-            let recoil_scale = convar::RecoilScale(cvar.find_var("weapon_recoil_scale").unwrap());
+                let ffa = convar::Ffa(cvar.find_var("mp_teammates_are_enemies").unwrap());
+                let panorama_disable_blur =
+                    convar::PanoramaDisableBlur(cvar.find_var("@panorama_disable_blur").unwrap());
+                let recoil_scale =
+                    convar::RecoilScale(cvar.find_var("weapon_recoil_scale").unwrap());
 
-            let input_stack_system = InputStackSystem {
-                ptr: input_stack_system,
-            };
+                let input_stack_system = InputStackSystem {
+                    ptr: input_stack_system,
+                };
 
-            input_stack_system.setup();
-            app.insert_resource(input_stack_system);
+                input_stack_system.setup();
+                app.insert_resource(input_stack_system);
 
-            app.insert_resource(cvar);
+                app.insert_resource(cvar);
 
-            app.insert_resource(ffa);
-            app.insert_resource(panorama_disable_blur);
-            app.insert_resource(recoil_scale);
+                app.insert_resource(ffa);
+                app.insert_resource(panorama_disable_blur);
+                app.insert_resource(recoil_scale);
 
-            let material_system = app.world.resource::<IMaterialSystem>();
+                let material_system = app.world.resource::<IMaterialSystem>();
 
-            // $envmapfresnelminmaxexp [0 1] is broken
-            let keyvalues = KeyValues::from_str(
-                "VertexLitGeneric",
-                "
+                // $envmapfresnelminmaxexp [0 1] is broken
+                let keyvalues = KeyValues::from_str(
+                    "VertexLitGeneric",
+                    "
                     $additive 1
                     $alpha 0.8
                     $envmap models/effects/cube_white
@@ -241,7 +243,7 @@ unsafe extern "C" fn frame_stage_notify(this: *mut u8, frame: ffi::c_int) {
                     $envmapanisotropyscale 5
                     $envtintmap [1 1 1]
 
-                    
+
 	  $envmapcontrast 1
 	  $nofog 1
 	  $model 1
@@ -251,83 +253,95 @@ unsafe extern "C" fn frame_stage_notify(this: *mut u8, frame: ffi::c_int) {
 	  $znearer 0
 	  $flat 1
                 ",
-            )
-            .unwrap();
+                )
+                .unwrap();
 
-            let glow = material_system.create("elysium/glow", &keyvalues).unwrap();
-            let keyvalues = KeyValues::from_str("UnlitGeneric", "").unwrap();
-            let flat = material_system.create("elysium/flat", &keyvalues).unwrap();
+                let glow = material_system.create("elysium/glow", &keyvalues).unwrap();
+                let keyvalues = KeyValues::from_str("UnlitGeneric", "").unwrap();
+                let flat = material_system.create("elysium/flat", &keyvalues).unwrap();
 
-            app.insert_resource(material::Glow(glow));
-            app.insert_resource(material::Flat(flat));
+                app.insert_resource(material::Glow(glow));
+                app.insert_resource(material::Flat(flat));
 
-            let engine = app.world.resource::<IVEngineClient>();
-            let bsp_tree_query = engine.bsp_tree_query().unwrap();
+                let engine = app.world.resource::<IVEngineClient>();
+                let bsp_tree_query = engine.bsp_tree_query().unwrap();
 
-            bsp_tree_query.setup();
+                bsp_tree_query.setup();
 
-            app.insert_resource(IPhysicsSurfaceProps { ptr });
-        }
-
-        if !app.world.contains_resource::<Surface>() {
-            let module_map = app.world.resource::<ModuleMap>();
-            let engine_module = module_map.get_module("vguimatsurface_client.so").unwrap();
-
-            if let Ok(ptr) = engine_module.create_interface("VGUI_Surface031") {
-                let surface = Surface { ptr };
-
-                surface.setup();
-                app.insert_resource(surface);
+                app.insert_resource(IPhysicsSurfaceProps { ptr });
             }
-        }
 
-        let mut system_state: SystemState<(
-            Res<Config>,
-            Res<IBaseClientDLL>,
-            Res<IVEngineClient>,
-            Res<CInput>,
-            Res<convar::PanoramaDisableBlur>,
-        )> = SystemState::new(&mut app.world);
+            if !app.world.contains_resource::<Surface>() {
+                let module_map = app.world.resource::<ModuleMap>();
+                let engine_module = module_map.get_module("vguimatsurface_client.so").unwrap();
 
-        let (config, client, engine, input, panorama_disable_blur) =
-            system_state.get_mut(&mut app.world);
-        let view_angle = engine.view_angle();
+                if let Ok(ptr) = engine_module.create_interface("VGUI_Surface031") {
+                    let surface = Surface { ptr };
 
-        match frame {
-            FRAME_RENDER_START => {
-                panorama_disable_blur.write(true);
-
-                if let Some(local_player) = IClientEntity::local_player() {
-                    let in_thirdperson = input.in_thirdperson();
-
-                    app.insert_resource(OriginalViewAngle(local_player.view_angle()));
-
-                    if in_thirdperson {
-                        if let Some(last_command) = app.world.get_resource::<CUserCmd>() {
-                            local_player.set_view_angle(last_command.view_angle);
-                        }
-                    } else {
-                        let aim_punch = local_player.aim_punch();
-
-                        local_player
-                            .set_view_angle(view_angle - Vec3::new(0.0, 0.0, 15.0) - aim_punch);
-                    }
+                    surface.setup();
+                    app.insert_resource(surface);
                 }
-
-                app.update();
             }
-            FRAME_RENDER_END => {
-                if let Some(original_view_angle) = app.world.get_resource::<OriginalViewAngle>() {
+
+            let mut system_state: SystemState<(
+                Res<Config>,
+                Res<IBaseClientDLL>,
+                Res<IVEngineClient>,
+                Res<CInput>,
+                Res<convar::PanoramaDisableBlur>,
+            )> = SystemState::new(&mut app.world);
+
+            let (config, client, engine, input, panorama_disable_blur) =
+                system_state.get_mut(&mut app.world);
+            let view_angle = engine.view_angle();
+
+            match frame {
+                FRAME_RENDER_START => {
+                    panorama_disable_blur.write(true);
+
                     if let Some(local_player) = IClientEntity::local_player() {
-                        local_player.set_view_angle(original_view_angle.0);
+                        let in_thirdperson = input.in_thirdperson();
+
+                        app.insert_resource(OriginalViewAngle(local_player.view_angle()));
+
+                        if in_thirdperson {
+                            if let Some(last_command) = app.world.get_resource::<CUserCmd>() {
+                                local_player.set_view_angle(last_command.view_angle);
+                            }
+                        } else {
+                            let aim_punch = local_player.aim_punch();
+
+                            local_player
+                                .set_view_angle(view_angle - Vec3::new(0.0, 0.0, 15.0) - aim_punch);
+                        }
+                    }
+
+                    app.update();
+                }
+                FRAME_RENDER_END => {
+                    if let Some(original_view_angle) = app.world.get_resource::<OriginalViewAngle>()
+                    {
+                        if let Some(local_player) = IClientEntity::local_player() {
+                            local_player.set_view_angle(original_view_angle.0);
+                        }
                     }
                 }
+                _ => {}
             }
-            _ => {}
-        }
 
-        app.world.resource::<FrameStageNotify>().0
+            app.world.resource::<FrameStageNotify>().0
+        });
+
+        (method)(this, frame)
     });
 
-    (method)(this, frame)
+    if let Err(error) = result {
+        if let Some(error) = error.downcast_ref::<&'static str>() {
+            error!("{error}");
+        } else if let Some(error) = error.downcast_ref::<String>() {
+            error!("{error}");
+        } else {
+            error!("unknown error");
+        }
+    }
 }

@@ -1,7 +1,5 @@
-use {
-    crate::{global, Ptr},
-    bevy::prelude::*,
-};
+use crate::{global, Ptr};
+use bevy::prelude::*;
 
 #[derive(Resource)]
 pub struct Paint(pub(crate) unsafe extern "C" fn(this: *mut u8, mode: i32));

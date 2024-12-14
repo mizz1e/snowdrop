@@ -1,11 +1,7 @@
-use {
-    crate::{Maps, Ptr},
-    std::{
-        ffi::{CStr, OsStr},
-        io,
-        path::{Path, PathBuf},
-    },
-};
+use crate::{Maps, Ptr};
+use std::ffi::{CStr, OsStr};
+use std::io;
+use std::path::{Path, PathBuf};
 
 /// A shared library.
 pub struct Library {
@@ -23,7 +19,7 @@ impl Library {
     pub unsafe fn open<P: AsRef<Path>>(path: P) -> io::Result<Self> {
         let path = path.as_ref().canonicalize()?;
 
-        libloading::Library::new(&path)
+        unsafe { libloading::Library::new(&path) }
             .map(|module| Self { module, path })
             .map_err(|error| io::Error::new(io::ErrorKind::Other, error))
     }

@@ -1,6 +1,5 @@
 use crate::{Error, Ptr};
-use bevy::prelude::trace;
-use bevy::prelude::*;
+use bevy::prelude::{trace, *};
 use std::collections::HashMap;
 use std::ffi;
 use std::sync::{Arc, Mutex};

@@ -42,7 +42,6 @@ pub use walking_animation::WalkingAnimation;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub mod assets;
 pub mod client;
 pub mod client_mode;
 pub mod client_state;

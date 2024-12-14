@@ -1,12 +1,8 @@
-use {
-    crate::{global, PlayerFlag, Tick, Time},
-    bevy::prelude::{error, Resource, Vec3},
-    std::{
-        ffi::{CStr, OsStr},
-        mem::MaybeUninit,
-        time::Duration,
-    },
-};
+use crate::{global, PlayerFlag, Tick, Time};
+use bevy::prelude::{error, Resource, Vec3};
+use std::ffi::{CStr, OsStr};
+use std::mem::MaybeUninit;
+use std::time::Duration;
 
 pub use var::Var;
 

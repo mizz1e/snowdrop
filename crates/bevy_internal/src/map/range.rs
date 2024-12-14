@@ -1,7 +1,6 @@
-use {
-    super::{Map, Maps},
-    std::{ops::Range, option, slice, vec},
-};
+use super::{Map, Maps};
+use std::ops::Range;
+use std::{option, slice, vec};
 
 /// An iterator of contiguous memory ranges.
 pub enum Ranges {

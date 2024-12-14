@@ -1,15 +1,11 @@
-use {
-    crate::{
-        convar, global, networked, IClientEntityList, IVEngineClient, Mat4x3, Ptr, Tick, Time,
-    },
-    bevy::prelude::{Resource, Vec3},
-    bevy_source_internal::pattern,
-    std::{
-        ffi::{self, OsStr},
-        mem,
-        time::Duration,
-    },
+use crate::{
+    convar, global, networked, IClientEntityList, IVEngineClient, Mat4x3, Ptr, Tick, Time,
 };
+use bevy::prelude::{Resource, Vec3};
+use bevy_source_internal::pattern;
+use std::ffi::{self, OsStr};
+use std::mem;
+use std::time::Duration;
 
 pub use id::EntityId;
 

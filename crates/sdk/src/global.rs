@@ -1,7 +1,5 @@
-use {
-    bevy::prelude::*,
-    bevy_source_internal::{app, app_mut},
-};
+use bevy::prelude::*;
+use bevy_source_internal::{app, app_mut};
 
 /// Passes a reference to the global [`App`] to the provided closure.
 ///

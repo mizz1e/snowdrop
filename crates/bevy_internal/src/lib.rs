@@ -4,23 +4,15 @@
 #![feature(fn_ptr_trait)]
 #![feature(ptr_metadata)]
 #![feature(slice_from_ptr_range)]
-#![feature(exposed_provenance)]
-#![feature(strict_provenance)]
 #![feature(tuple_trait)]
 
-use {
-    region::Protection,
-    std::{mem, ptr},
-};
+use region::Protection;
+use std::{mem, ptr};
 
-pub use {
-    crate::{
-        library::Library,
-        map::{Map, Maps, Permissions},
-        traits::{FnPtr, Ptr},
-    },
-    iced_x86,
-};
+pub use crate::library::Library;
+pub use crate::map::{Map, Maps, Permissions};
+pub use crate::traits::{FnPtr, Ptr};
+pub use iced_x86;
 
 mod library;
 mod map;
@@ -43,14 +35,16 @@ pub unsafe fn replace<T>(dst: *mut T, src: T) -> T {
     let permissions = Maps::permissions_of(dst as *const u8);
 
     if permissions.contains(Permissions::WRITE) {
-        ptr::replace(dst, src)
+        unsafe { ptr::replace(dst, src) }
     } else {
-        let _guard = region::protect_with_handle(
-            dst as *const u8,
-            mem::size_of::<T>(),
-            Protection::READ_WRITE_EXECUTE,
-        );
+        let _guard = unsafe {
+            region::protect_with_handle(
+                dst as *const u8,
+                mem::size_of::<T>(),
+                Protection::READ_WRITE_EXECUTE,
+            )
+        };
 
-        ptr::replace(dst, src)
+        unsafe { ptr::replace(dst, src) }
     }
 }

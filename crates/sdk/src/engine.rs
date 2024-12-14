@@ -1,16 +1,9 @@
-use {
-    crate::{
-        client_state, global, intrinsics,
-        model_render::{self, RenderFlags},
-        ClientState, IClientEntity, INetChannel, Ptr,
-    },
-    bevy::prelude::*,
-    std::{
-        ffi::{self, CStr, CString, OsStr},
-        mem,
-        os::unix::ffi::OsStrExt,
-    },
-};
+use crate::model_render::{self, RenderFlags};
+use crate::{client_state, global, intrinsics, ClientState, IClientEntity, INetChannel, Ptr};
+use bevy::prelude::*;
+use std::ffi::{self, CStr, CString, OsStr};
+use std::mem;
+use std::os::unix::ffi::OsStrExt;
 
 /// `engine/cdll_engine_int.cpp`.
 #[derive(Resource)]

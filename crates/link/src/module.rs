@@ -39,7 +39,7 @@ impl Callback {
 
     /// Cast a reference to the callback to a void pointer.
     #[inline]
-    pub fn as_raw(self: &mut Self) -> *mut libc::c_void {
+    pub fn as_raw(&mut self) -> *mut libc::c_void {
         self as *mut Self as *mut libc::c_void
     }
 

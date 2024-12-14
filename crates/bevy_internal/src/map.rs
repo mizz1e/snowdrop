@@ -1,12 +1,7 @@
-use {
-    self::range::Ranges,
-    std::{
-        fmt, io,
-        ops::Range,
-        path::{Path, PathBuf},
-        process, ptr, slice, vec,
-    },
-};
+use self::range::Ranges;
+use std::ops::Range;
+use std::path::{Path, PathBuf};
+use std::{fmt, io, process, ptr, slice, vec};
 
 mod range;
 

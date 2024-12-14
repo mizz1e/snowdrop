@@ -4,17 +4,18 @@ name = "elysium-sdk"
 version = "0.0.0"
 
 [dependencies]
-bevy = { version = "0.10.1", default-features = false, features = ["bevy_asset"] }
+bevy.workspace = true
 bevy_source_internal = { version = "0.0.0", path = "../bevy_internal", default-features = false }
-bitflags = { version = "2.2.1", default-features = false }
-dirs = { version = "5.0.0", default-features = false }
-libc = { version = "0.2.142", default-features = false }
-libloading = { version = "0.8.0", default-features = false }
-libm = { version = "0.2.6", default-features = false }
-phf = { version = "0.11.1", default-features = false, features = ["macros"] }
-sdl2 = { git = "https://github.com/rust-sdl2/rust-sdl2", rev = "27cd1fd67c811e06b9d997a77bb6089a1b65070d", version = "0.35.2", default-features = false, features = ["raw-window-handle"] }
+bitflags.workspace = true
+dirs.workspace = true
+libloading.workspace = true
+libc.workspace = true
+libm.workspace = true
+phf = { version = "0.11", default-features = false, features = ["macros"] }
+sdl2.workspace = true
 source-sys = { version = "0.0.0", path = "../sys", default-features = false }
 ubyte = { version = "0.10.3", default-features = false }
+thiserror.workspace = true
 
 [dependencies.link]
 default-features = false
@@ -27,5 +28,5 @@ version = "1.0"
 [dependencies.serde_json]
 version = "1.0"
 
-[dependencies.thiserror]
-version = "1.0"
+[lints]
+workspace = true

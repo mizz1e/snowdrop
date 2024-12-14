@@ -1,4 +1,6 @@
-use {crate::internal::Library, bevy::prelude::*, std::ops::Deref};
+use crate::internal::Library;
+use bevy::prelude::*;
+use std::ops::Deref;
 
 /// A Source engine module.
 pub trait Module: Deref<Target = Library> + Resource {

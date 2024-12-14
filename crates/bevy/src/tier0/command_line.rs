@@ -1,11 +1,8 @@
-use {
-    crate::{internal::assert_non_null, sys},
-    bevy::prelude::*,
-    std::{
-        ffi::{self, CStr},
-        ptr,
-    },
-};
+use crate::internal::assert_non_null;
+use crate::sys;
+use bevy::prelude::*;
+use std::ffi::{self, CStr};
+use std::ptr;
 
 // Magic "index" constants for `ICommandLine_FindParm`, `ICommandLine_GetParm`, `ICommandLine_SetParm`.
 const BASE_DIR: ffi::c_int = ffi::c_int::from_ne_bytes(*b"BASE");

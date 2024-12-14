@@ -1,8 +1,8 @@
-use {
-    crate::{assembly, Maps, Permissions},
-    iced_x86::Instruction,
-    std::{io, marker::Tuple, mem, ptr::Thin},
-};
+use crate::{assembly, Maps, Permissions};
+use iced_x86::Instruction;
+use std::marker::Tuple;
+use std::ptr::Thin;
+use std::{io, mem};
 
 /// A pointer.
 pub trait Ptr: Copy + Sized + Thin {
@@ -83,6 +83,7 @@ macro_rules! impl_fn_ptr {
                     ::core::assert!(self.is_readable(), "function pointer is not readable");
                     ::core::assert!(self.is_executable(), "function pointer is not executable");
                     ::core::assert!(self.disassemble().is_ok(), "function pointer does not contain valid code");
+                    tracing::debug!("calling method");
                 }
 
                 (self)($($arg,)*)
