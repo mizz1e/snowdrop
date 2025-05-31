@@ -1,84 +1,102 @@
 use super::library::{Item, Library};
 use super::x86;
-use std::ffi::CStr;
-use std::path::Path;
-use std::slice;
-use std::sync::Arc;
+use std::ffi::{CStr, OsStr};
+use std::{fmt, slice};
 
-/// Load a Source 1 module.
-fn source1(library: &Arc<Library>) -> Result<Module, String> {
-    let interface_registry: Item<*const ffi::Interface> = library.get(c"s_pInterfaceRegs")?;
-
-    Ok(Module {
-        library: Arc::clone(&library),
-        interface_registry: unsafe { *interface_registry.as_ptr() },
-    })
+/// The engine version.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum Version {
+    Source1,
+    Source2,
 }
 
-const CREATE_INTERFACE_THUNK: [u8; 0] = [];
+impl fmt::Display for Version {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let string = match self {
+            Self::Source1 => "1",
+            Self::Source2 => "2",
+        };
 
-const CREATE_INTERFACE_THUNK_INST: [u8; 1] = [
-    0xE9, // jmp <disp>
-];
-
-const CREATE_INTERFACE: [u8; 16] = [
-    0x55, // push rbp
-    0x48, 0x89, 0xE5, // mov rbp, rsp,
-    0x41, 0x55, // push r13
-    0x49, 0x89, 0xF5, // mov r13, rsi
-    0x41, 0x54, // push r12
-    0x53, // push rbx
-    0x48, 0x83, 0xEC, 0x08, // sub rsp, 8
-];
-
-const CREATE_INTERFACE_INST: [u8; 3] = [
-    0x48, 0x8B, 0x1D, // mov rbx, [rip + <disp>]
-];
-
-/// Load a Source 2 module.
-fn source2(library: &Arc<Library>) -> Result<Module, String> {
-    let create_interface: Item<u8> = library.get(c"CreateInterface")?;
-    let create_interface_addr = create_interface.as_ptr();
-
-    // Resolve thunk.
-    let create_interface_addr = x86::resolve_relative(
-        CREATE_INTERFACE_THUNK,
-        CREATE_INTERFACE_THUNK_INST,
-        unsafe { slice::from_raw_parts(create_interface_addr, 5) },
-    )
-    .map_err(|error| format!("source2 module: {error}"))?;
-
-    // Resolve interface registry.
-    let interface_registry =
-        x86::resolve_relative(CREATE_INTERFACE, CREATE_INTERFACE_INST, unsafe {
-            slice::from_raw_parts(create_interface_addr, 23)
-        })
-        .map_err(|error| format!("source2 module: {error}"))?;
-
-    Ok(Module {
-        library: Arc::clone(&library),
-        interface_registry: unsafe { *interface_registry.cast() },
-    })
+        fmt.write_str(string)
+    }
 }
 
-/// A Source module.
+/// An engine module.
 pub struct Module {
-    library: Arc<Library>,
-    interface_registry: *const ffi::Interface,
+    constructor: Item<u8>,
+    registry: Option<Item<*const ffi::Interface>>,
+    registry_head: *const ffi::Interface,
+    version: Version,
 }
 
 impl Module {
-    pub fn open(path: impl AsRef<Path>) -> Result<Self, String> {
-        let library = Library::open(path)?;
+    /// Open the specified file name.
+    pub fn open(file_name: impl AsRef<OsStr>) -> Result<Self, String> {
+        let file_name = file_name.as_ref();
+        let library = Library::open(file_name)?;
+        let constructor = library.get(c"CreateInterface")?;
 
-        source1(&library)
-            .or_else(|_| source2(&library))
-            .map_err(|error| format!("unsupported module system: {error}"))
+        if let Ok(registry) = library.get(c"s_pInterfaceRegs") {
+            return Ok(Self {
+                constructor,
+                registry_head: unsafe { *registry.as_ptr() },
+                registry: Some(registry),
+                version: Version::Source1,
+            });
+        }
+
+        if let Ok(this) = Self::resolve_registry(constructor) {
+            return Ok(this);
+        }
+
+        Err(format!(
+            "`{}` does not use a supported moduel system",
+            file_name.display()
+        ))
+    }
+
+    fn resolve_registry(constructor: Item<u8>) -> Result<Self, String> {
+        let addr = constructor.as_ptr();
+
+        // Resolve `CreateInterface` from the thunk.
+        let addr = x86::resolve_relative(
+            [],
+            [
+                0xE9, // jmp <disp>
+            ],
+            unsafe { slice::from_raw_parts(addr, 5) },
+        )
+        .map_err(|error| format!("{error}"))?;
+
+        // Resolve `s_pInterfaceRegs` from `mov rbx, [rip + <disp>]`.
+        let registry = x86::resolve_relative(
+            [
+                0x55, // push rbp
+                0x48, 0x89, 0xE5, // mov rbp, rsp,
+                0x41, 0x55, // push r13
+                0x49, 0x89, 0xF5, // mov r13, rsi
+                0x41, 0x54, // push r12
+                0x53, // push rbx
+                0x48, 0x83, 0xEC, 0x08, // sub rsp, 8
+            ],
+            [
+                0x48, 0x8B, 0x1D, // mov rbx, [rip + <disp>]
+            ],
+            unsafe { slice::from_raw_parts(addr, 23) },
+        )
+        .map_err(|error| format!("{error}"))?;
+
+        Ok(Self {
+            constructor,
+            registry_head: unsafe { *registry.cast() },
+            registry: None,
+            version: Version::Source2,
+        })
     }
 
     pub fn interfaces(&self) -> impl Iterator<Item = Interface> {
         let iter = ffi::Iter {
-            next: self.interface_registry,
+            head: self.registry_head,
         };
 
         iter.map(|interface| {
@@ -86,6 +104,10 @@ impl Module {
 
             Interface { name }
         })
+    }
+
+    pub fn version(&self) -> Version {
+        self.version
     }
 }
 
@@ -106,19 +128,19 @@ mod ffi {
     }
 
     pub(super) struct Iter {
-        pub(super) next: *const Interface,
+        pub(super) head: *const Interface,
     }
 
     impl Iterator for Iter {
         type Item = Interface;
 
         fn next(&mut self) -> Option<Self::Item> {
-            if self.next.is_null() {
+            if self.head.is_null() {
                 None
             } else {
-                let next = unsafe { self.next.read() };
+                let next = unsafe { self.head.read() };
 
-                self.next = next.next;
+                self.head = next.next;
 
                 Some(next)
             }

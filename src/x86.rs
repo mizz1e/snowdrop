@@ -1,4 +1,5 @@
-use std::{error::Error, fmt};
+use std::error::Error;
+use std::fmt;
 
 #[derive(Clone, Debug)]
 pub enum RelativeError {

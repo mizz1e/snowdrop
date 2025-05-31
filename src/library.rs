@@ -1,7 +1,6 @@
 use std::ffi::{self, CStr, OsStr};
 use std::marker::PhantomData;
 use std::mem;
-use std::path::Path;
 use std::sync::Arc;
 
 pub struct Library {
@@ -15,14 +14,14 @@ pub struct Item<T> {
 }
 
 impl Library {
-    pub fn open(path: impl AsRef<Path>) -> Result<Arc<Self>, String> {
-        let path = path.as_ref();
+    pub fn open(file_name: impl AsRef<OsStr>) -> Result<Arc<Self>, String> {
+        let file_name = file_name.as_ref();
 
-        match unsafe { libloading::Library::new(path) } {
+        match unsafe { libloading::Library::new(file_name) } {
             Ok(library) => Ok(Arc::new(Self { library })),
             Err(error) => Err(format!(
                 "failed to load library `{}`: {error}",
-                path.display()
+                file_name.display()
             )),
         }
     }
@@ -34,7 +33,7 @@ impl Library {
         } {
             Ok(symbol) => Ok(Item {
                 library: Arc::clone(self),
-                symbol: unsafe { extend_symbol_lifetime(symbol) },
+                symbol: unsafe { erase_lifetime(symbol) },
                 _phantom: PhantomData,
             }),
             Err(error) => Err(format!("failed to load symbol `{}`: {error}", unsafe {
@@ -44,10 +43,8 @@ impl Library {
     }
 }
 
-// Erase the provided `libloading::Symbol`'s lifetime.
-unsafe fn extend_symbol_lifetime<T>(
-    symbol: libloading::Symbol<'_, T>,
-) -> libloading::Symbol<'static, T> {
+/// Erases the provided `libloading::Symbol`'s lifetime.
+unsafe fn erase_lifetime<T>(symbol: libloading::Symbol<'_, T>) -> libloading::Symbol<'static, T> {
     unsafe { mem::transmute(symbol) }
 }
 
@@ -58,5 +55,9 @@ impl<T> Item<T> {
 
     pub fn as_ptr(&self) -> *const T {
         self.as_raw_ptr().cast_const().cast()
+    }
+
+    pub fn library(&self) -> Arc<Library> {
+        Arc::clone(&self.library)
     }
 }

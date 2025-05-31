@@ -1,37 +1,24 @@
 use self::module::Module;
+use tracing::{error, info};
 
 mod library;
 mod module;
 mod x86;
 
 fn main() {
+    tracing_subscriber::fmt::init();
+
     if let Err(error) = run() {
-        eprintln!("snowdrop: {error}");
+        error!("{error}");
     }
 }
 
 fn run() -> Result<(), String> {
-    source2()
-        .or_else(|_error| source1())
-        .map_err(|error| format!("no supported client: {error}"))
-}
+    let client = Module::open("libclient.so")
+        .or_else(|_error| Module::open("client_client.so"))
+        .map_err(|_error| String::from("no supported client found"))?;
 
-fn source2() -> Result<(), String> {
-    let module = Module::open("libclient.so")?;
-
-    for interface in module.interfaces() {
-        println!("{:?}", interface);
-    }
-
-    Ok(())
-}
-
-fn source1() -> Result<(), String> {
-    let module = Module::open("client_client.so")?;
-
-    for interface in module.interfaces() {
-        println!("{:?}", interface);
-    }
+    info!("loaded client for Source {}", client.version());
 
     Ok(())
 }
